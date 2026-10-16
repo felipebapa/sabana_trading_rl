@@ -1,8 +1,6 @@
 """Agente DQN implementado desde cero en PyTorch.
 
-Componentes: red Q (MLP), replay buffer, red objetivo (actualización dura),
-política epsilon-greedy con decaimiento lineal y pérdida Huber.
-Opcional: Double DQN (`agent.double_dqn: true`).
+Componentes: red Q (MLP), replay buffer, red objetivo (actualización dura), política epsilon-greedy con decaimiento lineal y pérdida Huber.
 """
 from __future__ import annotations
 

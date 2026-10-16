@@ -1,5 +1,5 @@
-"""Estrategias de referencia (sabana_trading_rl). Todas exponen `act(obs, info=None) -> int`
-y se evalúan en el mismo entorno (mismos datos y mismos costos) que el agente."""
+"""Estrategias de referencia. 
+Todas exponen `act(obs, info=None) -> int` y se evalúan en el mismo entorno (mismos datos y mismos costos) que el agente."""
 from __future__ import annotations
 
 import argparse
@@ -28,7 +28,7 @@ class BuyAndHold:
 
 
 class ConstantExposure:
-    """Mantiene siempre la misma exposición (p. ej. 50 %)."""
+    """Mantiene siempre la misma exposición (Ej. 50 %)."""
 
     def __init__(self, action: int):
         self.a = action
@@ -38,7 +38,8 @@ class ConstantExposure:
 
 
 class SMATrend:
-    """Seguimiento de tendencia: 100 % invertido si close > SMA50, si no 0 %.
+    """Seguimiento de tendencia: 100 % invertido si close > SMA50, si no 0 %. 
+    
     Referencia de una regla simple con feature técnica (usa solo datos hasta t)."""
 
     def __init__(self, feature_names: list[str], full_action: int):

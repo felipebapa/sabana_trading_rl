@@ -1,13 +1,9 @@
 """Datos de cripto: descarga (downloader de gym-trading-env), carga, features causales
 y partición temporal.
 
-Regla de oro (lookahead): cada feature en la fila t se calcula SOLO con datos
-hasta t (ventanas rolling/ewm hacia atrás). La normalización (z-score) usa
-únicamente media y desviación del período de ENTRENAMIENTO.
+lookahead: cada feature en la fila t se calcula solo con datos hasta t (ventanas rolling/ewm hacia atrás). La normalización (z-score) usa únicamente media y desviación del período de ENTRENAMIENTO.
 
-CONVENCIÓN DE TIEMPO: el índice de cada fila es la hora de APERTURA de la vela (UTC),
-igual que `date_open` en el downloader. La vela cierra una vela después, y el agente
-decide al cierre de esa vela (con `close` ya conocido).
+CONVENCIÓN DE TIEMPO: el índice de cada fila es la hora de apertura de la vela (UTC), igual que `date_open` en el downloader. La vela cierra una vela después, y el agente decide al cierre de esa vela (con `close` ya conocido).
 
 CSV esperado:  timestamp, open, high, low, close, volume
 """
@@ -47,12 +43,12 @@ def download_crypto(exchange: str, symbol: str, timeframe: str, start: str, end:
         from gym_trading_env.downloader import download
     except ImportError as e:  # pragma: no cover
         raise ImportError(
-            "Falta gym-trading-env para descargar datos. Instálalo con:  pip install -e \".[data]\""
+            "Falta gym-trading-env para descargar datos. Instalar con:  pip install -e \".[data]\""
         ) from e
 
     raw_dir = Path(raw_dir)
     raw_dir.mkdir(parents=True, exist_ok=True)
-    # El downloader descarta la vela cuyo timestamp es EXACTAMENTE igual a `since`
+    # El downloader descarta la vela cuyo timestamp es igual a `since`
     # (usa `since < timestamp_open`). Restamos 1 ms para conservar la vela de `start`.
     since = _utc(start) - timedelta(milliseconds=1)
     until = _utc(end)  # exclusivo

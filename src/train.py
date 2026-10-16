@@ -37,6 +37,7 @@ def train(cfg: dict, seed: int, run_dir: Path, verbose: bool = True) -> dict:
     splits = build_splits(prices, cfg["data"])
     train_env = make_env(cfg, splits["train"], training=True)
     val_env = make_env(cfg, splits["val"], training=False)
+    test_env = make_env(cfg, splits["test"], training=False)
 
     obs_dim = train_env.observation_space.shape[0]
     n_actions = train_env.action_space.n
@@ -76,23 +77,36 @@ def train(cfg: dict, seed: int, run_dir: Path, verbose: bool = True) -> dict:
         if step % tc["eval_every"] == 0 or step == total:
             _, _, vm = evaluate_policy(val_env, agent)
             score = vm[metric]
+
+            # --- solo diagnóstico de sobreajuste (NO se usa para decidir) ---
+            _, _, tm = evaluate_policy(test_env, agent)
+
             row = {
-                "step": step, "epsilon": round(eps, 4),
+                "step": step,
+                "epsilon": round(eps, 4),
                 "loss": float(np.mean(losses[-1000:])) if losses else np.nan,
                 "train_ep_reward": float(np.mean(recent_ep_rewards)) if recent_ep_rewards else np.nan,
                 **{f"val_{k}": vm[k] for k in ["cum_return", "sharpe", "max_drawdown", "n_trades", "avg_position"]},
+                **{f"test_{k}": tm[k] for k in ["cum_return", "sharpe", "max_drawdown", "n_trades", "avg_position"]},
             }
             log_rows.append(row)
+
+            # guardar checkpoint intermedio (opcional pero útil para la curva)
+            ckpt_dir = run_dir / "checkpoints"
+            ckpt_dir.mkdir(exist_ok=True)
+            agent.save(ckpt_dir / f"step_{step:07d}.pt", extra={"step": step, "val_" + metric: score})
+
             if score > best_score:
                 best_score, best_step, since_best = score, step, 0
                 agent.save(run_dir / "model.pt", extra={"step": step, "val_" + metric: score, "seed": seed})
             else:
                 since_best += 1
+
             if verbose:
                 print(
                     f"[{cfg['name']} seed={seed}] step {step:>7}/{total} eps={eps:.2f} "
-                    f"val_{metric}={score:+.3f} val_ret={vm['cum_return']:+.1%} val_dd={vm['max_drawdown']:.1%} "
-                    f"pos_media={vm['avg_position']:.2f} ops={vm['n_trades']} "
+                    f"val_{metric}={score:+.3f} test_{metric}={tm[metric]:+.3f} "
+                    f"val_ret={vm['cum_return']:+.1%} test_ret={tm['cum_return']:+.1%} "
                     f"{'*' if since_best == 0 else ''}"
                 )
             if step >= tc["min_steps"] and since_best >= tc["patience"]:
