@@ -1,0 +1,7 @@
+# V2: V1 + penalización al aumento del drawdown. BTC es ~3x más volátil que un índice
+# bursátil, por eso el coeficiente de partida es menor que en un activo tranquilo.
+# Ajustar SOLO con el período de validación.
+extends: base.yaml
+name: reward_v2
+reward:
+  dd_coef: 1.0

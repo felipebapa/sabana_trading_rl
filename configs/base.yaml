@@ -1,0 +1,56 @@
+# Configuración base de sabana_trading_rl. Las variantes de recompensa la extienden.
+name: base
+
+data:
+  csv: data/BTCUSDT_1d.csv        # generado con: python -m src.data
+  symbol: BTC/USDT
+  # Descarga (downloader de gym-trading-env / ccxt). `end` es exclusivo. Fechas en UTC.
+  download:
+    exchange: binance             # alternativas soportadas: bitfinex2, huobi
+    timeframe: 1d
+    start: "2017-08-01"
+    end: "2026-01-01"
+  # Partición temporal estricta (fechas inclusivas, por apertura de vela, UTC).
+  splits:
+    train: ["2018-01-01", "2021-12-31"]   # el agente aprende (2018 bajista, 2020-21 alcista)
+    val:   ["2022-01-01", "2023-12-31"]   # hiperparámetros, recompensa, early stopping (caída 2022 + recuperación)
+    test:  ["2024-01-01", "2025-12-31"]   # held-out: solo evaluación final
+  # Features (definidas y justificadas en src/data.py). Las ventanas están en VELAS.
+  features: [ret_1, ret_7, ret_30, dist_sma20, dist_sma50, vol_20, rsi_14, vol_ratio]
+
+env:
+  initial_capital: 100000
+  actions: [0.0, 0.5, 1.0]     # fracción del capital invertida en el activo
+  cost_bps: 10                 # 10 bps = 0.10 % (comisión spot típica de Binance)
+  rf_annual: 0.0               # rendimiento del efectivo (0 = el cash no rinde)
+  periods_per_year: 365        # cripto opera 24/7: 365 velas diarias por año (1h -> 8760)
+  train_episode_length: 365    # ~1 año por episodio, inicio aleatorio
+
+reward:
+  scale: 100.0            # solo reescala la recompensa para estabilizar la red
+  risk_aversion: 0.0      # penaliza r^2 (aproxima media-varianza)
+  dd_coef: 0.0            # penaliza el aumento del drawdown
+  turnover_penalty: 0.0   # penalización extra por cambiar de posición (además del costo real)
+
+agent:
+  hidden: [64, 64]
+  lr: 0.0005
+  gamma: 0.99
+  batch_size: 64
+  buffer_size: 50000
+  learning_starts: 1000
+  train_freq: 1
+  target_update_every: 500
+  double_dqn: false
+  grad_clip: 10.0
+  eps_start: 1.0
+  eps_end: 0.05
+  eps_decay_frac: 0.5
+
+train:
+  total_steps: 100000
+  eval_every: 5000
+  min_steps: 30000
+  patience: 8
+  selection_metric: sharpe
+  seeds: [0, 1, 2, 3, 4]

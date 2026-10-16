@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+.venv/
+*.egg-info/
+.ipynb_checkpoints/
+.pytest_cache/
+runs/
+results/
+# Datos crudos del downloader (pickle). El CSV procesado SÍ se versiona.
+data/raw/
+*.pkl

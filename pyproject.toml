@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sabana-trading-rl"
+version = "0.1.0"
+description = "Agente DQN de inversión en cripto (BTC/USDT) con entorno Gymnasium lookahead-safe"
+requires-python = ">=3.10"
+dependencies = [
+    "numpy>=1.26",
+    "pandas>=2.1",
+    "gymnasium>=0.29",
+    "torch>=2.1",
+    "pyyaml>=6.0",
+    "matplotlib>=3.8",
+]
+
+[project.optional-dependencies]
+# Solo para DESCARGAR datos (usa el downloader de gym-trading-env, que fija
+# ccxt==3.0.59 y flask==2.2.5). Si ya tienes data/*.csv no hace falta instalarlo.
+data = ["gym-trading-env>=0.3.5"]
+dev = ["pytest>=8", "jupyter>=1.0"]
+
+[tool.setuptools]
+packages = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

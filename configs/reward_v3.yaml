@@ -1,0 +1,8 @@
+# V3: V2 + penalización por rotación. En un experimento previo con SPY una penalización
+# de 0.0005 casi no redujo las operaciones, así que se parte de un valor mayor.
+# Ajustar SOLO con el período de validación.
+extends: base.yaml
+name: reward_v3
+reward:
+  dd_coef: 1.0
+  turnover_penalty: 0.002

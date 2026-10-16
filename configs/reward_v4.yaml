@@ -1,0 +1,16 @@
+# V4: igual que V3 pero con una penalización por rotación 2.5 veces mayor.
+#
+# Problema observado en validación (2022-2023, 5 semillas): V3 (turnover_penalty = 0.002)
+# casi no redujo las operaciones frente a V2 (233 vs 245) y los costos incluso subieron
+# ($14.3k vs $13.0k). Con scale = 100, 0.002 equivale a ~0.2 unidades de recompensa por un
+# cambio completo 0 <-> 100 %, frente a una desviación diaria de ~3 unidades: la red no lo percibe.
+# Hipótesis: una penalización mayor reducirá las operaciones sin destruir el Sharpe.
+# Solo cambia turnover_penalty respecto a V3 (dd_coef sigue en 1.0).
+#
+# Regla de selección fijada ANTES de ver el held-out: se elige la versión con mayor Sharpe medio
+# en validación; si la diferencia es menor a 1 error estándar, se prefiere menor drawdown y menores costos.
+extends: base.yaml
+name: reward_v4
+reward:
+  dd_coef: 1.0
+  turnover_penalty: 0.005
