@@ -153,13 +153,27 @@ def _diagnostics(summary: pd.DataFrame) -> list[str]:
 # --------------------------------------------------------------------------- #
 # CLI
 # --------------------------------------------------------------------------- #
-def evaluate_cli(config: str, runs_dir: str | None, split: str, final: bool, out: str, n_random: int = 20) -> None:
+def evaluate_cli(
+    config: str,
+    runs_dir: str | None,
+    split: str,
+    final: bool,
+    out: str,
+    n_random: int = 20,
+    cost_bps: float | None = None,
+) -> None:
     if split == "test" and not final:
         raise SystemExit(
             "El split 'test' es el held-out: úsalo UNA vez con el agente ya definido.\n"
             "Si es tu intención, agrega --final."
         )
     cfg = load_config(config)
+        # Sobrescribe el costo para el análisis de sensibilidad.
+    if cost_bps is not None:
+        if cost_bps < 0:
+            raise ValueError("--cost-bps debe ser >= 0")
+        cfg["env"]["cost_bps"] = float(cost_bps)
+
     prices = load_prices(cfg["data"]["csv"])
     splits = build_splits(prices, cfg["data"])
     env = make_env(cfg, splits[split], training=False)
@@ -220,8 +234,17 @@ def main() -> None:
     ap.add_argument("--final", action="store_true", help="necesario para evaluar sobre el held-out (test)")
     ap.add_argument("--out", default="results")
     ap.add_argument("--n-random", type=int, default=20)
+    ap.add_argument(
+    "--cost-bps",
+    type=float,
+    default=None,
+    help="Sobrescribe el costo de transacción para todos los métodos",
+)
     a = ap.parse_args()
-    evaluate_cli(a.config, a.runs_dir, a.split, a.final, a.out, a.n_random)
+    evaluate_cli(
+    a.config, a.runs_dir, a.split, a.final, a.out,
+    a.n_random, a.cost_bps
+)
 
 
 if __name__ == "__main__":
